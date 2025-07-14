@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/models/activity_model.dart';
 import '../../domain/entities/activity.dart';
 import '../../domain/entities/journal.dart';
 import '../providers/activity_provider.dart';
@@ -15,7 +16,7 @@ class JournalScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final journalProvider = Provider.of<JournalProvider>(context);
     final activityProvider = Provider.of<ActivityProvider>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Journal'),
@@ -40,7 +41,7 @@ class JournalScreen extends StatelessWidget {
                       // Find the activity for this journal
                       final activity = activityProvider.activities.firstWhere(
                         (a) => a.id == journal.activityId,
-                        orElse: () => Activity(
+                        orElse: () => ActivityModel(
                           id: -1,
                           title: 'Unknown Activity',
                           description: '',
@@ -50,7 +51,7 @@ class JournalScreen extends StatelessWidget {
                           userId: -1,
                         ),
                       );
-                      
+
                       return _buildJournalCard(
                         context, 
                         journal, 
@@ -67,7 +68,7 @@ class JournalScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   // Build a card for a journal entry
   Widget _buildJournalCard(
     BuildContext context, 
@@ -97,7 +98,7 @@ class JournalScreen extends StatelessWidget {
                 Text(
                   journal.formattedDate,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: Colors.blue[300],
                     fontSize: 12,
                   ),
                 ),
@@ -151,46 +152,46 @@ class JournalScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   // Get color based on mood
   Color _getMoodColor(String mood) {
     switch (mood.toLowerCase()) {
       case 'great':
-        return Colors.green;
+        return Colors.blue;
       case 'good':
-        return Colors.lightGreen;
+        return Colors.blue[400]!;
       case 'neutral':
-        return Colors.amber;
+        return Colors.blue[300]!;
       case 'tired':
-        return Colors.orange;
+        return Colors.blue[600]!;
       case 'exhausted':
-        return Colors.red;
+        return Colors.blue[800]!;
       default:
-        return Colors.grey;
+        return Colors.blue[200]!;
     }
   }
-  
+
   // Show dialog to select an activity for a new journal entry
   Future<void> _selectActivityForJournal(BuildContext context) async {
     final activityProvider = Provider.of<ActivityProvider>(context, listen: false);
-    
+
     // Get completed activities
     final completedActivities = activityProvider.activities
         .where((activity) => activity.isCompleted)
         .toList();
-    
+
     if (completedActivities.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('You need to complete an activity before adding a journal entry.'),
-            backgroundColor: Colors.orange,
+            backgroundColor: Colors.blue,
           ),
         );
       }
       return;
     }
-    
+
     final selectedActivity = await showDialog<Activity>(
       context: context,
       builder: (context) => AlertDialog(
@@ -220,12 +221,12 @@ class JournalScreen extends StatelessWidget {
         ],
       ),
     );
-    
+
     if (selectedActivity != null && context.mounted) {
       _showJournalDialog(context, selectedActivity);
     }
   }
-  
+
   // Show dialog to add or edit a journal entry
   Future<void> _showJournalDialog(
     BuildContext context, 
@@ -235,118 +236,122 @@ class JournalScreen extends StatelessWidget {
     final formKey = GlobalKey<FormState>();
     final contentController = TextEditingController(text: journal?.content ?? '');
     String selectedMood = journal?.mood ?? Moods.good;
-    
+
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(journal == null ? 'Add Journal Entry' : 'Edit Journal Entry'),
-        content: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Activity: ${activity.title}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  '${activity.type} - ${DateFormat('yyyy-MM-dd').format(activity.date)}',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 16),
-                const Text('How did you feel?'),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: Moods.values.map((mood) {
-                    return ChoiceChip(
-                      label: Text(mood),
-                      selected: selectedMood == mood,
-                      onSelected: (selected) {
-                        if (selected) {
-                          selectedMood = mood;
-                        }
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: contentController,
-                  decoration: const InputDecoration(
-                    labelText: 'Journal Entry',
-                    border: OutlineInputBorder(),
-                    hintText: 'Write about your experience...',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(journal == null ? 'Add Journal Entry' : 'Edit Journal Entry'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Activity: ${activity.title}',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  maxLines: 5,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter some content';
-                    }
-                    return null;
-                  },
-                ),
-              ],
+                  Text(
+                    '${activity.type} - ${DateFormat('yyyy-MM-dd').format(activity.date)}',
+                    style: TextStyle(color: Colors.blue[300]),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('How did you feel?'),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: Moods.values.map((mood) {
+                      return ChoiceChip(
+                        label: Text(mood),
+                        selected: selectedMood == mood,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              selectedMood = mood;
+                            });
+                          }
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: contentController,
+                    decoration: const InputDecoration(
+                      labelText: 'Journal Entry',
+                      border: OutlineInputBorder(),
+                      hintText: 'Write about your experience...',
+                    ),
+                    maxLines: 5,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter some content';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (formKey.currentState?.validate() ?? false) {
-                final journalProvider = Provider.of<JournalProvider>(context, listen: false);
-                final userProvider = Provider.of<UserProvider>(context, listen: false);
-                
-                if (journal == null) {
-                  // Create new journal entry
-                  await journalProvider.createJournal(
-                    activityId: activity.id,
-                    content: contentController.text,
-                    mood: selectedMood,
-                  );
-                  
-                  // Award XP for creating a journal entry
-                  if (userProvider.currentUser != null) {
-                    await userProvider.addXp(5); // 5 XP for journaling
-                  }
-                } else {
-                  // Update existing journal entry
-                  await journalProvider.updateJournal(
-                    journal.copyWith(
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  final journalProvider = Provider.of<JournalProvider>(context, listen: false);
+                  final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+                  if (journal == null) {
+                    // Create new journal entry
+                    await journalProvider.createJournal(
+                      activityId: activity.id,
                       content: contentController.text,
                       mood: selectedMood,
-                    ),
-                  );
-                }
-                
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        journal == null
-                            ? 'Journal entry created'
-                            : 'Journal entry updated',
+                    );
+
+                    // Award XP for creating a journal entry
+                    if (userProvider.currentUser != null) {
+                      await userProvider.addXp(5); // 5 XP for journaling
+                    }
+                  } else {
+                    // Update existing journal entry
+                    await journalProvider.updateJournal(
+                      journal.copyWith(
+                        content: contentController.text,
+                        mood: selectedMood,
                       ),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                    );
+                  }
+
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          journal == null
+                              ? 'Journal entry created'
+                              : 'Journal entry updated',
+                        ),
+                        backgroundColor: Colors.blue,
+                      ),
+                    );
+                  }
                 }
-              }
-            },
-            child: const Text('SAVE'),
-          ),
-        ],
+              },
+              child: const Text('SAVE'),
+            ),
+          ],
+        ),
       ),
     );
   }
-  
+
   // Delete a journal entry
   Future<void> _deleteJournal(BuildContext context, Journal journal) async {
     final confirmed = await showDialog<bool>(
@@ -366,18 +371,18 @@ class JournalScreen extends StatelessWidget {
         ],
       ),
     );
-    
+
     if (confirmed == true && context.mounted) {
       final journalProvider = Provider.of<JournalProvider>(context, listen: false);
       final success = await journalProvider.deleteJournal(journal.id);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               success ? 'Journal entry deleted' : 'Failed to delete journal entry',
             ),
-            backgroundColor: success ? Colors.green : Colors.red,
+            backgroundColor: success ? Colors.blue : Colors.blue[800],
           ),
         );
       }

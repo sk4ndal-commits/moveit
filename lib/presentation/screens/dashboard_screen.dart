@@ -15,7 +15,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final activityProvider = Provider.of<ActivityProvider>(context);
-    
+
     // Show loading indicator if data is still loading
     if (userProvider.isLoading || activityProvider.isLoading) {
       return const Scaffold(
@@ -24,7 +24,7 @@ class DashboardScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     // Show error if there's an issue
     if (userProvider.error != null) {
       return Scaffold(
@@ -33,7 +33,7 @@ class DashboardScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     final user = userProvider.currentUser;
     if (user == null) {
       return const Scaffold(
@@ -42,11 +42,11 @@ class DashboardScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     // Calculate XP progress
     final xpRequired = AppConstants.xpRequiredForLevel(user.level);
     final xpProgress = user.xp / xpRequired;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppConstants.appName),
@@ -96,7 +96,7 @@ class DashboardScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: xpProgress,
-                        backgroundColor: Colors.grey[300],
+                        backgroundColor: Colors.blue[100],
                         valueColor: AlwaysStoppedAnimation<Color>(
                           Theme.of(context).colorScheme.primary,
                         ),
@@ -105,16 +105,30 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
+              // Activity stats
+              Text(
+                'Activity Stats',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+
+              SizedBox(
+                height: 150,
+                child: _buildActivityStats(context, activityProvider.activities),
+              ),
+
+              const SizedBox(height: 24),
+
               // Today's activities
               Text(
                 "Today's Activities",
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
-              
+
               if (activityProvider.todayActivities.isEmpty)
                 const Card(
                   child: Padding(
@@ -140,56 +154,42 @@ class DashboardScreen extends StatelessWidget {
                     );
                   },
                 ),
-              
-              const SizedBox(height: 24),
-              
-              // Activity stats
-              Text(
-                'Activity Stats',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              
-              SizedBox(
-                height: 200,
-                child: _buildActivityStats(context, activityProvider.activities),
-              ),
             ],
           ),
         ),
       ),
     );
   }
-  
+
   // Complete an activity
   Future<void> _completeActivity(BuildContext context, Activity activity) async {
     if (activity.isCompleted) return;
-    
+
     final activityProvider = Provider.of<ActivityProvider>(context, listen: false);
     await activityProvider.completeActivity(activity.id);
-    
+
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Activity completed! You earned ${activity.durationMinutes} XP.'),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.blue,
         ),
       );
     }
   }
-  
+
   // Build activity stats chart
   Widget _buildActivityStats(BuildContext context, List<Activity> activities) {
     // Group activities by type
     final Map<String, double> activityByType = {};
-    
+
     for (final activity in activities) {
       if (activity.isCompleted) {
         final type = activity.type;
         activityByType[type] = (activityByType[type] ?? 0) + activity.durationHours;
       }
     }
-    
+
     // If no completed activities, show a message
     if (activityByType.isEmpty) {
       return const Card(
@@ -198,19 +198,19 @@ class DashboardScreen extends StatelessWidget {
         ),
       );
     }
-    
+
     // Create pie chart sections
     final sections = <PieChartSectionData>[];
     final colors = [
       Colors.blue,
-      Colors.red,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-      Colors.pink,
+      Colors.blue[700]!,
+      Colors.blue[600]!,
+      Colors.blue[500]!,
+      Colors.blue[400]!,
+      Colors.blue[300]!,
+      Colors.blue[200]!,
     ];
-    
+
     int colorIndex = 0;
     activityByType.forEach((type, hours) {
       sections.add(
@@ -218,7 +218,7 @@ class DashboardScreen extends StatelessWidget {
           color: colors[colorIndex % colors.length],
           value: hours,
           title: '$type\n${hours.toStringAsFixed(1)}h',
-          radius: 80,
+          radius: 60,
           titleStyle: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -228,7 +228,7 @@ class DashboardScreen extends StatelessWidget {
       );
       colorIndex++;
     });
-    
+
     return Card(
       elevation: 4,
       child: Padding(

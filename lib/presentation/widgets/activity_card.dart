@@ -49,11 +49,13 @@ class ActivityCard extends StatelessWidget {
               Text(
                 activity.description,
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: Colors.blue[300],
                   decoration: activity.isCompleted
                       ? TextDecoration.lineThrough
                       : null,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3,
               ),
             ],
             const SizedBox(height: 8),
@@ -62,23 +64,29 @@ class ActivityCard extends StatelessWidget {
                 Icon(
                   Icons.access_time,
                   size: 16,
-                  color: Colors.grey[600],
+                  color: Colors.blue[300],
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  '${activity.durationMinutes} min',
-                  style: TextStyle(color: Colors.grey[600]),
+                Flexible(
+                  child: Text(
+                    '${activity.durationMinutes} min',
+                    style: TextStyle(color: Colors.blue[300]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Icon(
                   Icons.calendar_today,
                   size: 16,
-                  color: Colors.grey[600],
+                  color: Colors.blue[300],
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  activity.formattedDate,
-                  style: TextStyle(color: Colors.grey[600]),
+                Flexible(
+                  child: Text(
+                    activity.formattedDate,
+                    style: TextStyle(color: Colors.blue[300]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -93,15 +101,17 @@ class ActivityCard extends StatelessWidget {
                       icon: const Icon(Icons.check),
                       label: const Text('Complete'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                       ),
                     ),
                   if (activity.isCompleted)
-                    Chip(
-                      label: const Text('Completed'),
-                      backgroundColor: Colors.green[100],
-                      labelStyle: TextStyle(color: Colors.green[800]),
+                    Flexible(
+                      child: Chip(
+                        label: const Text('Completed'),
+                        backgroundColor: Colors.blue[100],
+                        labelStyle: TextStyle(color: Colors.blue[800]),
+                      ),
                     ),
                   if (onEdit != null) ...[
                     const SizedBox(width: 8),
@@ -117,7 +127,7 @@ class ActivityCard extends StatelessWidget {
                       icon: const Icon(Icons.delete),
                       onPressed: onDelete,
                       tooltip: 'Delete',
-                      color: Colors.red,
+                      color: Colors.blue[700],
                     ),
                   ],
                 ],
@@ -136,26 +146,29 @@ class ActivityCard extends StatelessWidget {
         chipColor = Colors.blue;
         break;
       case 'walking':
-        chipColor = Colors.green;
+        chipColor = Colors.blue[600]!;
         break;
       case 'cycling':
-        chipColor = Colors.orange;
+        chipColor = Colors.blue[500]!;
         break;
       case 'swimming':
-        chipColor = Colors.cyan;
+        chipColor = Colors.blue[400]!;
         break;
       case 'gym':
-        chipColor = Colors.red;
+        chipColor = Colors.blue[700]!;
         break;
       case 'yoga':
-        chipColor = Colors.purple;
+        chipColor = Colors.blue[300]!;
         break;
       default:
-        chipColor = Colors.grey;
+        chipColor = Colors.blue[200]!;
     }
 
     return Chip(
-      label: Text(activity.type),
+      label: Text(
+        activity.type,
+        overflow: TextOverflow.ellipsis,
+      ),
       backgroundColor: chipColor.withOpacity(0.2),
       labelStyle: TextStyle(color: chipColor),
     );
